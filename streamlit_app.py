@@ -4,6 +4,7 @@ import json
 import zipfile
 from pathlib import Path
 import pandas as pd
+import shutil
 
 from powerbi_analyzer import PowerBIAnalyzer
 
@@ -21,15 +22,7 @@ if uploaded_file is not None:
     # Create a temporary directory to extract files
     temp_dir = Path("temp_extracted")
     if temp_dir.exists():
-        # Clear existing temp directory
-        for f in temp_dir.glob("*"):
-            if f.is_dir():
-                for subf in f.glob("*"):
-                    subf.unlink()
-                f.rmdir()
-            else:
-                f.unlink()
-        temp_dir.rmdir()
+        shutil.rmtree(temp_dir)  # Safely remove the directory and its contents
     temp_dir.mkdir()
 
     # Extract the uploaded ZIP
