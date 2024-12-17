@@ -29,12 +29,10 @@ if uploaded_file is not None:
     with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
         zip_ref.extractall(temp_dir)
 
-    # Guess or specify the project name
-    # Adjust this logic if your project name is different.
-    # For example, if you know the project name is always "PBIP TEST.pbix":
-    project_name = "PBIP TEST.pbix"
+    # Specify the base path
     base_path = str(temp_dir)
 
+    # Generate documentation
     analyzer = PowerBIAnalyzer(base_path)
     documentation = analyzer.generate_documentation()
 
@@ -49,14 +47,15 @@ if uploaded_file is not None:
 
     # Tables Summary
     if "tables" in documentation and documentation["tables"]:
-        tables_data = []
-        for t in documentation["tables"]:
-            tables_data.append({
+        tables_data = [
+            {
                 "Table Name": t["name"],
                 "Columns": len(t["columns"]),
                 "Measures": len(t["measures"]),
                 "Has PowerQuery": bool(t["powerquery_code"])
-            })
+            }
+            for t in documentation["tables"]
+        ]
 
         st.write("### Tables Summary")
         st.table(pd.DataFrame(tables_data))
