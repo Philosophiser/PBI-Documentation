@@ -197,36 +197,36 @@ class PowerBIAnalyzer:
 
         return self.documentation
 
-    def generate_markdown_summary(self, filename="documentation.md"):
-        md_lines = []
-        md_lines.append(f"# Documentation for {self.project_name}\n")
-        md_lines.append("## Tables and Columns\n")
-        for table in self.documentation["tables"]:
-            md_lines.append(f"### Table: {table['name']}\n")
-            md_lines.append("**Columns:**\n")
-            for col in table["columns"]:
-                md_lines.append(f"- {col['name']} (DataType: {col.get('dataType','Unknown')}, Format: {col.get('formatString','None')})")
-            if table["measures"]:
-                md_lines.append("\n**Measures:**\n")
-                for m in table["measures"]:
-                    md_lines.append(f"- {m['name']} = {m['expression']}")
-            if table["powerquery_code"]:
-                md_lines.append("\n**PowerQuery M Code:**\n")
-                md_lines.append("```")
-                md_lines.append(table["powerquery_code"])
-                md_lines.append("```")
+def generate_markdown_summary(self, filename="documentation.md"):
+    md_lines = []
+    md_lines.append("# Documentation\n")  # Remove the project_name reference
+    md_lines.append("## Tables and Columns\n")
+    for table in self.documentation["tables"]:
+        md_lines.append(f"### Table: {table['name']}\n")
+        md_lines.append("**Columns:**\n")
+        for col in table["columns"]:
+            md_lines.append(f"- {col['name']} (DataType: {col.get('dataType','Unknown')}, Format: {col.get('formatString','None')})")
+        if table["measures"]:
+            md_lines.append("\n**Measures:**\n")
+            for m in table["measures"]:
+                md_lines.append(f"- {m['name']} = {m['expression']}")
+        if table["powerquery_code"]:
+            md_lines.append("\n**PowerQuery M Code:**\n")
+            md_lines.append("```")
+            md_lines.append(table["powerquery_code"])
+            md_lines.append("```")
 
-        # Relationships
-        if self.documentation["relationships"]:
-            md_lines.append("\n## Relationships\n")
-            for rel in self.documentation["relationships"]:
-                md_lines.append(f"- **{rel['name']}**: {rel['fromTable']}.{rel['fromColumn']} -> {rel['toTable']}.{rel['toColumn']}")
-        else:
-            md_lines.append("\n## Relationships\nNo relationships found.")
+    # Relationships
+    if self.documentation["relationships"]:
+        md_lines.append("\n## Relationships\n")
+        for rel in self.documentation["relationships"]:
+            md_lines.append(f"- **{rel['name']}**: {rel['fromTable']}.{rel['fromColumn']} -> {rel['toTable']}.{rel['toColumn']}")
+    else:
+        md_lines.append("\n## Relationships\nNo relationships found.")
 
-        # Diagram reference
-        md_lines.append("\n## Relationship Diagram\n")
-        md_lines.append("![Relationships](relationships.png)\n")
+    # Diagram reference
+    md_lines.append("\n## Relationship Diagram\n")
+    md_lines.append("![Relationships](relationships.png)\n")
 
-        with open(filename, "w", encoding='utf-8') as f:
-            f.write("\n".join(md_lines))
+    with open(filename, "w", encoding='utf-8') as f:
+        f.write("\n".join(md_lines))
