@@ -42,7 +42,7 @@ if uploaded_file is not None:
     project_name = "PBIP TEST.pbix"
     base_path = str(temp_dir)
 
-    analyzer = PowerBIAnalyzer(base_path, project_name)
+    analyzer = PowerBIAnalyzer(base_path)
     documentation = analyzer.generate_documentation()
 
     # Show the relationships diagram if generated
