@@ -198,9 +198,13 @@ class PowerBIAnalyzer:
         return self.documentation
 
 def generate_markdown_summary(self, filename="documentation.md"):
+    """
+    Generates a markdown summary file for the parsed documentation.
+    """
     md_lines = []
-    md_lines.append("# Documentation\n")  # Remove the project_name reference
+    md_lines.append("# Documentation\n")
     md_lines.append("## Tables and Columns\n")
+    
     for table in self.documentation["tables"]:
         md_lines.append(f"### Table: {table['name']}\n")
         md_lines.append("**Columns:**\n")
@@ -216,7 +220,7 @@ def generate_markdown_summary(self, filename="documentation.md"):
             md_lines.append(table["powerquery_code"])
             md_lines.append("```")
 
-    # Relationships
+    # Relationships Section
     if self.documentation["relationships"]:
         md_lines.append("\n## Relationships\n")
         for rel in self.documentation["relationships"]:
@@ -228,5 +232,7 @@ def generate_markdown_summary(self, filename="documentation.md"):
     md_lines.append("\n## Relationship Diagram\n")
     md_lines.append("![Relationships](relationships.png)\n")
 
+    # Write to file
     with open(filename, "w", encoding='utf-8') as f:
         f.write("\n".join(md_lines))
+
