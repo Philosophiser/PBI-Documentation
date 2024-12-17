@@ -118,31 +118,46 @@ class PowerBIAnalyzer:
             }
             self.documentation["relationships"].append(rel_info)
 
-    def create_graphviz_relationship_diagram(self, output_file="relationships.gv"):
+    def create_graphviz_relationship_diagram(self, output_file="relationships"):
+        """
+        Generates a relationship diagram using Graphviz and saves it as 'relationships.png'.
+        """
         documentation = self.documentation
         dot = Digraph(comment='Table Relationships Diagram', format='png')
         dot.attr(rankdir='LR', bgcolor="white")
         dot.attr('graph', fontsize="12", fontname="Arial")
         dot.attr('node', shape='box', fontname="Arial", fontsize="10")
-
+    
         # Extract relationships and columns involved
         involved_columns = set()
         for rel in documentation["relationships"]:
             involved_columns.add((rel["fromTable"], rel["fromColumn"]))
             involved_columns.add((rel["toTable"], rel["toColumn"]))
-
+    
+        # Create a cluster for each table
         for table in documentation["tables"]:
             tname = table["name"]
             related_columns = [c["name"] for c in table["columns"] if (tname, c["name"]) in involved_columns]
+    
             with dot.subgraph(name=f"cluster_{tname}") as c:
-                c.attr(label=tname, labelloc='t', fontsize="12")
+                c.attr(label=tname, labelloc='t', fontsize="12", fontname="Arial", fontcolor="black")
                 for col in related_columns:
                     c.node(f"{tname}_{col}", label=col)
-
+    
+        # Add edges between columns
         for rel in documentation["relationships"]:
             dot.edge(f"{rel['fromTable']}_{rel['fromColumn']}", f"{rel['toTable']}_{rel['toColumn']}")
-
-        dot.render(output_file, cleanup=True)
+    
+        # Generate diagram and save as 'relationships.png'
+        output_path = dot.render(output_file, cleanup=True)
+        png_path = f"{output_file}.png"
+    
+        # Ensure file is renamed to 'relationships.png'
+        if os.path.exists(png_path):
+            os.rename(png_path, "relationships.png")
+            print("Relationship diagram successfully generated as 'relationships.png'")
+        else:
+            print("Failed to generate relationship diagram.")
 
     def generate_markdown_summary(self, filename="documentation.md"):
         """Generates a markdown summary file for the parsed documentation."""
