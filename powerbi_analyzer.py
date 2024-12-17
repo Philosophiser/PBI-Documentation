@@ -108,7 +108,6 @@ class PowerBIAnalyzer:
             re.MULTILINE
         )
 
-        found_relationships = False
         for match in self.relationship_pattern.finditer(content):
             rel_info = {
                 "name": match.group(1),
@@ -118,10 +117,6 @@ class PowerBIAnalyzer:
                 "toColumn": match.group(5)
             }
             self.documentation["relationships"].append(rel_info)
-            found_relationships = True
-
-        if not found_relationships:
-            print("No relationships found based on the updated regex pattern.")
 
     def create_graphviz_relationship_diagram(self, output_file="relationships.gv"):
         documentation = self.documentation
@@ -136,103 +131,34 @@ class PowerBIAnalyzer:
             involved_columns.add((rel["fromTable"], rel["fromColumn"]))
             involved_columns.add((rel["toTable"], rel["toColumn"]))
 
-        # Create a cluster for each table
         for table in documentation["tables"]:
             tname = table["name"]
             related_columns = [c["name"] for c in table["columns"] if (tname, c["name"]) in involved_columns]
-
-            # If no recognized related columns, use fallback from involved_columns
-            if not related_columns:
-                fallback_related_cols = [col for (tbl, col) in involved_columns if tbl == tname]
-                related_columns = fallback_related_cols
-
-            related_columns = list(set(related_columns))  # remove duplicates
-
             with dot.subgraph(name=f"cluster_{tname}") as c:
-                c.attr(
-                    label=tname,
-                    labelloc='t',
-                    fontsize="12",
-                    fontname="Arial",
-                    fontcolor="black",
-                    style="filled",
-                    fillcolor="white",
-                    color="black",
-                    penwidth="1.0"
-                )
+                c.attr(label=tname, labelloc='t', fontsize="12")
+                for col in related_columns:
+                    c.node(f"{tname}_{col}", label=col)
 
-                # Create one node per column
-                if related_columns:
-                    for col in related_columns:
-                        c.node(f"{tname}_{col}", label=col, shape="box")
-                else:
-                    # If no columns related, just create an empty node with the table name cluster
-                    c.node(f"{tname}_empty", label="", shape="box")
-
-        # Add edges between columns
         for rel in documentation["relationships"]:
-            from_node = f"{rel['fromTable']}_{rel['fromColumn']}"
-            to_node = f"{rel['toTable']}_{rel['toColumn']}"
-            dot.edge(from_node, to_node)
+            dot.edge(f"{rel['fromTable']}_{rel['fromColumn']}", f"{rel['toTable']}_{rel['toColumn']}")
 
-        output_path = dot.render(output_file, cleanup=True)
-        png_path = 'relationships.png'
-        if os.path.exists(output_file + '.png'):
-            os.rename(output_file + '.png', png_path)
-            print(f"Relationship diagram successfully generated and saved as: {png_path}")
-        else:
-            print("No diagram was generated. Check if relationships exist and try again.")
+        dot.render(output_file, cleanup=True)
+
+    def generate_markdown_summary(self, filename="documentation.md"):
+        """Generates a markdown summary file for the parsed documentation."""
+        md_lines = ["# Documentation\n"]
+        for table in self.documentation["tables"]:
+            md_lines.append(f"## Table: {table['name']}")
+            for col in table["columns"]:
+                md_lines.append(f"- **{col['name']}**: DataType={col.get('dataType', 'Unknown')}")
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write("\n".join(md_lines))
 
     def generate_documentation(self):
         self.analyze_tables()
         self.analyze_relationships()
-        self.create_graphviz_relationship_diagram()  # Generates relationships.png
-
-        # Save to JSON
-        with open("documentation.json", "w", encoding='utf-8') as f:
-            json.dump(self.documentation, f, indent=4, ensure_ascii=False)
-
-        # Generate Markdown summary
-        self.generate_markdown_summary("documentation.md")
-
+        self.create_graphviz_relationship_diagram()
+        self.generate_markdown_summary()
+        with open("documentation.json", "w", encoding="utf-8") as f:
+            json.dump(self.documentation, f, indent=4)
         return self.documentation
-
-def generate_markdown_summary(self, filename="documentation.md"):
-    """
-    Generates a markdown summary file for the parsed documentation.
-    """
-    md_lines = []
-    md_lines.append("# Documentation\n")
-    md_lines.append("## Tables and Columns\n")
-    
-    for table in self.documentation["tables"]:
-        md_lines.append(f"### Table: {table['name']}\n")
-        md_lines.append("**Columns:**\n")
-        for col in table["columns"]:
-            md_lines.append(f"- {col['name']} (DataType: {col.get('dataType','Unknown')}, Format: {col.get('formatString','None')})")
-        if table["measures"]:
-            md_lines.append("\n**Measures:**\n")
-            for m in table["measures"]:
-                md_lines.append(f"- {m['name']} = {m['expression']}")
-        if table["powerquery_code"]:
-            md_lines.append("\n**PowerQuery M Code:**\n")
-            md_lines.append("```")
-            md_lines.append(table["powerquery_code"])
-            md_lines.append("```")
-
-    # Relationships Section
-    if self.documentation["relationships"]:
-        md_lines.append("\n## Relationships\n")
-        for rel in self.documentation["relationships"]:
-            md_lines.append(f"- **{rel['name']}**: {rel['fromTable']}.{rel['fromColumn']} -> {rel['toTable']}.{rel['toColumn']}")
-    else:
-        md_lines.append("\n## Relationships\nNo relationships found.")
-
-    # Diagram reference
-    md_lines.append("\n## Relationship Diagram\n")
-    md_lines.append("![Relationships](relationships.png)\n")
-
-    # Write to file
-    with open(filename, "w", encoding='utf-8') as f:
-        f.write("\n".join(md_lines))
-
