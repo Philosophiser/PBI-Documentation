@@ -6,11 +6,13 @@ import pandas as pd
 from graphviz import Digraph
 
 class PowerBIAnalyzer:
-    def __init__(self, base_path, project_name):
+    def __init__(self, base_path):
         self.base_path = Path(base_path)
-        self.project_name = project_name
-        self.semantic_model_path = self.base_path / f"{project_name}.SemanticModel"
-        self.report_path = self.base_path / f"{project_name}.Report"
+        # Find any folder that ends with .SemanticModel and .Report
+        self.semantic_model_path = next(self.base_path.glob("*.SemanticModel"), None)
+        self.report_path = next(self.base_path.glob("*.Report"), None)
+        if not self.semantic_model_path or not self.report_path:
+            raise FileNotFoundError("Could not find .SemanticModel or .Report directories in the provided folder.")
         self.documentation = {
             "dax_measures": [],
             "relationships": [],
