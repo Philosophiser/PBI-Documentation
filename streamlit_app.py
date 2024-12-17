@@ -4,17 +4,14 @@ import json
 import zipfile
 from pathlib import Path
 import pandas as pd
-from graphviz import Digraph
 
-# Include the PowerBIAnalyzer class definition and any additional required code here.
-# Example:
-# from powerbi_analyzer import PowerBIAnalyzer
-# For this example, assume you've pasted the class code below or above.
+from powerbi_analyzer import PowerBIAnalyzer
 
 st.title("Power BI Documentation Generator")
 
 st.write("""
-Upload a ZIP file containing your PBIP project (`.SemanticModel`, `.Report`, `.tmdl` files).
+Upload a ZIP file containing your PBIP project (the `.SemanticModel` and `.Report` directories, 
+along with `.tmdl` and `relationships.tmdl` files).
 The app will parse the metadata, generate documentation, and display the relationship diagram.
 """)
 
@@ -24,7 +21,7 @@ if uploaded_file is not None:
     # Create a temporary directory to extract files
     temp_dir = Path("temp_extracted")
     if temp_dir.exists():
-        # Clear if already exists
+        # Clear existing temp directory
         for f in temp_dir.glob("*"):
             if f.is_dir():
                 for subf in f.glob("*"):
@@ -40,21 +37,19 @@ if uploaded_file is not None:
         zip_ref.extractall(temp_dir)
 
     # Guess or specify the project name
-    # If your `.SemanticModel` and `.Report` files are named "PBIP TEST.pbix.SemanticModel" etc., 
-    # your project name might be "PBIP TEST.pbix".
-    # Adjust this logic as needed to detect the project name automatically.
+    # Adjust this logic if your project name is different.
+    # For example, if you know the project name is always "PBIP TEST.pbix":
     project_name = "PBIP TEST.pbix"
     base_path = str(temp_dir)
 
-    # Initialize and run the analyzer
     analyzer = PowerBIAnalyzer(base_path, project_name)
     documentation = analyzer.generate_documentation()
 
-    # Display the relationships diagram
+    # Show the relationships diagram if generated
     if os.path.exists("relationships.png"):
         st.image("relationships.png", caption="Table Relationships Diagram")
     else:
-        st.write("No diagram found.")
+        st.write("No diagram found. Check if relationships exist in your model.")
 
     # Display documentation as structured tables:
     st.write("## Documentation Overview")
