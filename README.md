@@ -1,19 +1,26 @@
-# 🎈 Blank app template
+# Power BI Documentation Generator with Streamlit
 
-A simple Streamlit app template for you to modify!
+This application allows you to upload a Power BI Project (`.pbip`) folder as a zipped file. It will parse the folder’s `.tmdl` and `relationships.tmdl` files, generate documentation, and display a relationships diagram via a Streamlit web interface.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+## Features
 
-### How to run it on your own machine
+- **Upload a `.zip` file** containing your `.SemanticModel` and `.Report` directories along with `.tmdl` and `relationships.tmdl` files.
+- **Automatic parsing** of tables, columns, measures, PowerQuery code, and relationships.
+- **Visualization** of relationships with a `relationships.png` diagram.
+- **Documentation export** as `documentation.json` and `documentation.md`.
+- **Interactive tables** displaying extracted metadata in a structured format.
 
-1. Install the requirements
+## Requirements
 
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+- Python 3.8 or higher (recommended)
+- The packages listed in `requirements.txt`:
+  - `streamlit`
+  - `pandas`
+  - `graphviz`
+  - `matplotlib` (if still needed)
+  
+**Note**:  
+You must have Graphviz installed on your system for the diagram generation to work correctly. On Debian/Ubuntu:
+```bash
+sudo apt-get update
+sudo apt-get install graphviz
